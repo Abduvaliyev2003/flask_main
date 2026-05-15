@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  backend:
+    build:
+      context: .
+    ports:
+      - "8001:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+    command: sh -c "sleep 15 && python main.py 0.0.0.0:5000"
+
+  db:
+    image: mysql:8.0.46
+    restart: always
+    environment:
+      MYSQL_DATABASE: main
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "33067:3306"
+
+volumes:
+  dbdata:
