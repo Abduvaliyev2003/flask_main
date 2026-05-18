@@ -11,7 +11,13 @@ services:
     depends_on:
       - db
     command: sh -c "sleep 15 && python main.py 0.0.0.0:5000"
-
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'python consumer.py'
+    depends_on:
+      - db
   db:
     image: mysql:8.0.46
     restart: always
