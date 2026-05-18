@@ -1,11 +1,13 @@
 from flask import Flask
-from flask import CORS
+from flask_cors import CORS  # <--- BU YERDA O'ZGARISH
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@db:main'
-CORS()
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@db/main' # @db:main emas, @db/main bo'lishi kerak
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+CORS(app) # <--- app obyektini ichiga yozing
 
 db = SQLAlchemy(app)
 
@@ -21,7 +23,7 @@ class ProductUser(db.Model):
     user_id = db.Column(db.Integer)
     product_id = db.Column(db.Integer)
 
-    UniqueConstraint('user_id', 'product_id', name='user_product_unique')
+    __table_args__ = (UniqueConstraint('user_id', 'product_id', name='user_product_unique'),)
 
 @app.route('/')
 def index():
