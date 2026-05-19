@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 
 import requests
-from flask import Flask, jsonify
+from flask import Flask, jsonify, abort
 from flask_cors import CORS  # <--- BU YERDA O'ZGARISH
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
+
+from producer import publish
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@db/main' # @db:main emas, @db/main bo'lishi kerak
@@ -43,8 +45,13 @@ def like(id):
     json = req.json()
 
     try:
-       product = ProductUser(user_id=json['id'], product_id=id)
+       productUser = ProductUser(user_id=json['id'], product_id=id)
+       db.session.add(productUser)
+       db.session.commit()
+
+       publish('product_liked', id)
     except:
+        abort(400, 'You already liked this product')
     return jsonify({
         'message': 'success'
     }), 201
