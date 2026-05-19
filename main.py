@@ -1,4 +1,7 @@
-from flask import Flask
+from dataclasses import dataclass
+
+import requests
+from flask import Flask, jsonify
 from flask_cors import CORS  # <--- BU YERDA O'ZGARISH
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
@@ -11,23 +14,40 @@ CORS(app) # <--- app obyektini ichiga yozing
 
 db = SQLAlchemy(app)
 
+@dataclass
 class Product(db.Model):
-    __tablename__ = 'product'
+
+    id = int
+    title = str
+    image = str
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(200))
     image = db.Column(db.String(200))
 
+@dataclass
 class ProductUser(db.Model):
-    __tablename__ = 'product_user'
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer)
     product_id = db.Column(db.Integer)
 
     __table_args__ = (UniqueConstraint('user_id', 'product_id', name='user_product_unique'),)
 
-@app.route('/')
+@app.route('/api/products')
 def index():
-    return "Hello World"
+    return jsonify(Product.query.all())
+
+@app.route('/api/products/<int:id>/like', methods=['POST'])
+def like(id):
+    req = requests.get('http://docker.for.mac.localhost:8000/api/user')
+    json = req.json()
+
+    try:
+       product = ProductUser(user_id=json['id'], product_id=id)
+    except:
+    return jsonify({
+        'message': 'success'
+    }), 201
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
